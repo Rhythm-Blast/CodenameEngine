@@ -1,7 +1,5 @@
 package funkin.backend.system;
 
-import flixel.graphics.frames.FlxAtlasFrames;
-import flixel.graphics.frames.FlxFramesCollection;
 import flixel.graphics.FlxGraphic;
 
 /**
@@ -17,66 +15,46 @@ class GraphicCacheSprite extends FlxSprite {
 	 */
 	public var nonRenderedCachedGraphics:Array<FlxGraphic> = [];
 
-	@:dox(hide)
-	public function new() {
+	public override function new() {
 		super();
-		moves = false;
-		alpha = 0.0001;
-		scale.set(0.001, 0.001);
+		alpha = 0.00001;
 	}
 
 	/**
 	 * Caches a graphic at specified path.
 	 * @param path Path to the graphic.
-	 * @return FlxGraphic
 	 */
-	public function cache(path:String):FlxGraphic return cacheGraphic(FlxG.bitmap.add(path));
+	public function cache(path:String) {
+		cacheGraphic(FlxG.bitmap.add(path));
+	}
 
 	/**
 	 * Caches a graphic.
 	 * @param graphic The FlxGraphic
-	 * @return FlxGraphic
 	 */
-	public function cacheGraphic(graphic:FlxGraphic):FlxGraphic {
-		if (graphic != null && !cachedGraphics.contains(graphic)) {
-			graphic.incrementUseCount();
-			cachedGraphics.push(graphic);
-			nonRenderedCachedGraphics.push(graphic);
-		}
-		return graphic;
+	public function cacheGraphic(graphic:FlxGraphic) {
+		if (graphic == null) return;
+
+		// make their useCount one time higher to prevent them from auto being cleared from cache
+		graphic.useCount++;
+		graphic.destroyOnNoUse = false;
+		cachedGraphics.push(graphic);
+		nonRenderedCachedGraphics.push(graphic);
 	}
 
-	/**
-	 * Caches a frames.
-	 * @param frames The FlxFramesCollection
-	 * @return FlxFramesCollection
-	 */
-	public function cacheFrames(frames:FlxFramesCollection):FlxFramesCollection {
-		if (frames != null) {
-			@:privateAccess
-			if (frames is FlxAtlasFrames) for (graphic in cast(frames, FlxAtlasFrames).usedGraphics) cacheGraphic(graphic);
-			cacheGraphic(frames.parent);
+	public override function destroy() {
+		for(g in cachedGraphics) {
+			g.destroyOnNoUse = true;
+			g.useCount--;
 		}
-		return frames;
-	}
-
-	@:dox(hide)
-	override function destroy() {
-		for (g in cachedGraphics) g.decrementUseCount();
-
 		graphic = null;
 		super.destroy();
 	}
 
-	@:dox(hide)
-	override function update(elapsed:Float) {}
-
-	@:dox(hide)
-	override function draw() {
-		while (nonRenderedCachedGraphics.length != 0) {
-			loadGraphic(nonRenderedCachedGraphics.pop());
-			if (FlxG.renderTile) drawComplex(FlxG.camera);
-			else drawSimple(FlxG.camera);
+	public override function draw() {
+		while (nonRenderedCachedGraphics.length > 0) {
+			loadGraphic(nonRenderedCachedGraphics.shift());
+			drawComplex(FlxG.camera);
 		}
 	}
 }

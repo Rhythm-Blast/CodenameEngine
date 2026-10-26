@@ -4,7 +4,6 @@ import funkin.editors.stage.StageCreationScreen.StageCreationData;
 import funkin.editors.EditorTreeMenu;
 import funkin.game.Stage;
 import funkin.options.type.NewOption;
-import funkin.options.type.FolderOption;
 import funkin.options.type.OptionType;
 import funkin.options.type.TextOption;
 
@@ -21,9 +20,9 @@ class StageSelection extends EditorTreeMenu {
 class StageSelectionScreen extends EditorTreeMenuScreen {
 	public var stages:Array<String> = [];
 
-	public function makeStageOption(stage:String, ?folder:String = ''):TextOption {
+	public function makeStageOption(stage:String):TextOption {
 		return new TextOption(stage, getID('acceptStage'), () -> {
-			FlxG.switchState(new StageEditor(folder + stage));
+			FlxG.switchState(new StageEditor(stage));
 		});
 	}
 
@@ -32,36 +31,11 @@ class StageSelectionScreen extends EditorTreeMenuScreen {
 			parent.openSubState(new StageCreationScreen(saveStage));
 		});
 
-		var isMods:Bool = true;
-		var modsList = Stage.getList(true, true, true);
-
-		if (modsList.length == 0) {
-			modsList = Stage.getList(false, true, true);
-			isMods = false;
+		var modsList:Array<String> = Stage.getList(true, true);
+		for (stage in (modsList.length == 0 ? Stage.getList(false, true) : modsList)) {
+			stages.push(stage.toLowerCase());
+			add(makeStageOption(stage));
 		}
-
-		function generateList(modsList:Array<String>, isMods:Bool, folderPath:String = ""):Array<FlxSprite> {
-			var list:Array<FlxSprite> = [];
-
-			for (char in modsList) {
-				if (char.endsWith("/")) {
-					var folderName = CoolUtil.getFilename(char.substr(0, char.length-1));
-
-					list.push(new FolderOption(folderName + ' >', getID('acceptFolder'), () -> {
-						var newModsList = Stage.getList(isMods, true, true, char);
-						var newList:Array<FlxSprite> = generateList(newModsList, isMods, folderPath + folderName + "/");
-						parent.addMenu(new EditorTreeMenuScreen(folderName, translate('desc-folder', [folderPath + folderName + "/"]), newList));
-					}));
-				}
-				else {
-					list.push(makeStageOption(char, folderPath));
-				}
-			}
-
-			return list;
-		}
-
-		for (o in generateList(modsList, isMods)) add(o);
 	}
 
 	public function saveStage(creation:StageCreationData) {

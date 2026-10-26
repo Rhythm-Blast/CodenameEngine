@@ -23,15 +23,17 @@ class HitWindowData
 				map.set("shit", 166.67);
 			// V-Slice
 			case FNF_VSLICE:
+				map.set("epic", 22.5);
 				map.set("sick", 45.0);
 				map.set("good", 90.0);
 				map.set("bad", 135.4);
 				map.set("shit", 180.0);
 			// Default, taken from Etterna
 			case _:
-				map.set("sick", 37.8);
-				map.set("good", 75.6);
-				map.set("bad", 113.4);
+				map.set("epic", 25.5);
+				map.set("sick", 45.0);
+				map.set("good", 90.0);
+				map.set("bad", 135.4);
 				map.set("shit", 180.0);
 		}
 

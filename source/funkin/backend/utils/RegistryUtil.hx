@@ -30,18 +30,17 @@ class RegistryUtil {
 		if (result != ERROR_SUCCESS) return null();
 
 		result = RegQueryValueExW(hKey, valname.c_str(), NULL, &dataType, NULL, &dataSize);
-		if (result != ERROR_SUCCESS || dataSize == 0 || (dataType != REG_SZ && dataType != REG_EXPAND_SZ)) {
+		if (result != ERROR_SUCCESS || dataSize == 0) {
 			RegCloseKey(hKey);
 			return null();
 		}
 
-		std::vector<wchar_t> buffer(dataSize / sizeof(wchar_t) + 1, 0);
-		DWORD readSize = dataSize;
-		result = RegQueryValueExW(hKey, valname.c_str(), NULL, NULL, (LPBYTE)buffer.data(), &readSize);
+		std::vector<wchar_t> buffer(dataSize / sizeof(wchar_t));
+		result = RegQueryValueExW(hKey, valname.c_str(), NULL, NULL, (LPBYTE)buffer.data(), &dataSize);
 		RegCloseKey(hKey);
 
 		if (result == ERROR_SUCCESS) {
-			return ::String::create(buffer.data());
+			return ::String(buffer.data());
 		}
 		return null();
 	')

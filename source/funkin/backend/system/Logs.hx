@@ -2,7 +2,6 @@ package funkin.backend.system;
 
 import flixel.system.debug.log.LogStyle;
 import flixel.system.frontEnds.LogFrontEnd;
-import funkin.backend.system.console.ConsoleUI;
 import funkin.backend.utils.NativeAPI.ConsoleColor;
 import funkin.backend.utils.NativeAPI;
 import haxe.Log;
@@ -10,26 +9,18 @@ import haxe.Log;
 final class Logs {
 	private static var __showing:Bool = false;
 
-	public static final LOG_WARNING_TEXT =     '   WARNING   ';
-	public static final LOG_ERROR_TEXT =       '    ERROR    ';
-	public static final LOG_TRACE_TEXT =       '    TRACE    ';
-	public static final LOG_VERBOSE_TEXT =     '   VERBOSE   ';
-	public static final LOG_SUCCESS_TEXT =     '   SUCCESS   ';
-	public static final LOG_FAILURE_TEXT =     '   FAILURE   ';
-	public static final LOG_INFORMATION_TEXT = ' INFORMATION ';
-
 	public static var nativeTrace = Log.trace;
 	public static function init() {
 		Log.trace = function(v:Dynamic, ?infos:Null<haxe.PosInfos>) {
 			var data = [
-				logText('${infos.fileName}:${infos.lineNumber}: ', CYAN, TRACE),
-				logText(Std.string(v), LIGHTGRAY, TRACE)
+				logText('${infos.fileName}:${infos.lineNumber}: ', CYAN),
+				logText(Std.string(v))
 			];
 
 			if (infos.customParams != null) {
 				for (i in infos.customParams) {
 					data.push(
-						logText("," + Std.string(i), LIGHTGRAY, TRACE)
+						logText("," + Std.string(i))
 					);
 				}
 			}
@@ -86,31 +77,30 @@ final class Logs {
 	public static function prepareColoredTrace(text:Array<LogText>, level:Level = INFO) {
 		var time = Date.now();
 		var superCoolText = [
-			logText('[  ', LIGHTGRAY, level),
-			logText('${Std.string(time.getHours()).addZeros(2)}:${Std.string(time.getMinutes()).addZeros(2)}:${Std.string(time.getSeconds()).addZeros(2)}', DARKMAGENTA, level),
-			logText('  |', LIGHTGRAY, level),
+			logText('[  '),
+			logText('${Std.string(time.getHours()).addZeros(2)}:${Std.string(time.getMinutes()).addZeros(2)}:${Std.string(time.getSeconds()).addZeros(2)}', DARKMAGENTA),
+			logText('  |'),
 			switch (level)
 			{
-				case WARNING:	logText(LOG_WARNING_TEXT, DARKYELLOW, level);
-				case ERROR:		logText(LOG_ERROR_TEXT, DARKRED, level);
-				case TRACE:		logText(LOG_TRACE_TEXT, GRAY, level);
-				case VERBOSE:	logText(LOG_VERBOSE_TEXT, DARKMAGENTA, level);
-				case SUCCESS:	logText(LOG_SUCCESS_TEXT, GREEN, level);
-				case FAILURE:	logText(LOG_FAILURE_TEXT, RED, level);
-				default:		logText(LOG_INFORMATION_TEXT, CYAN, level);
+				case WARNING:	logText('   WARNING   ', DARKYELLOW);
+				case ERROR:		logText('    ERROR    ', DARKRED);
+				case TRACE:		logText('    TRACE    ', GRAY);
+				case VERBOSE:	logText('   VERBOSE   ', DARKMAGENTA);
+				case SUCCESS:	logText('   SUCCESS   ', GREEN);
+				case FAILURE:	logText('   FAILURE   ', RED);
+				default:		logText(' INFORMATION ', CYAN);
 			},
-			logText('] ', LIGHTGRAY, level)
+			logText('] ')
 		];
 		for(k=>e in superCoolText)
 			text.insert(k, e);
 		return text;
 	}
 
-	public static function logText(text:String, color:ConsoleColor = LIGHTGRAY, level:Level = INFO):LogText {
+	public static function logText(text:String, color:ConsoleColor = LIGHTGRAY):LogText {
 		return {
 			text: text,
-			color: color,
-			level: level
+			color: color
 		};
 	}
 
@@ -125,7 +115,7 @@ final class Logs {
 			Sys.print(t.text);
 		}
 		NativeAPI.setConsoleColors();
-		Sys.println("\r");
+		Sys.print("\r\n");
 		__showing = false;
 		#elseif mobile
 		while(__showing) {
@@ -139,24 +129,19 @@ final class Logs {
 		@:privateAccess
 		nativeTrace([for(t in text) t.text].join(""));
 		#end
-
-		#if IMGUI_ENABLED
-		@:privateAccess
-		ConsoleUI.instance.addToConsole(text);
-		#end
 	}
 
 	public inline static function traceColored(text:Array<LogText>, level:Level = INFO)
 		__showInConsole(prepareColoredTrace(text, level));
 
 	public static function trace(text:String, level:Level = INFO, color:ConsoleColor = LIGHTGRAY, ?prefix:String) {
-		var text = [logText(text, color, level)];
-		if(prefix != null) text.insert(0, getPrefix(prefix, level));
+		var text = [logText(text, color)];
+		if(prefix != null) text.insert(0, getPrefix(prefix));
 		traceColored(text, level);
 	}
 
-	public inline static function getPrefix(prefix:String, level:Level = INFO)
-		return logText('[${prefix}] ', BLUE, level);
+	public inline static function getPrefix(prefix:String)
+		return logText('[${prefix}] ', BLUE);
 
 	public inline static function infos(text:String, color:ConsoleColor = LIGHTGRAY, ?prefix:String)
 		Logs.trace(text, INFO, color, prefix);
@@ -184,5 +169,4 @@ enum abstract Level(Int) {
 typedef LogText = {
 	var text:String;
 	var color:ConsoleColor;
-	var level:Level;
 }

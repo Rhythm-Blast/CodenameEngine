@@ -48,7 +48,7 @@ final class AlphabetComponent {
 final class AlphabetLetterData {
 	@:optional public var isDefault:Bool = false;
 	public var advance:Float;
-	public var advanceStyle:AdvanceMode;
+	public var advanceEmpty:Bool;
 	public var components:Array<AlphabetComponent>;
 	public var startIndex:Int = 0;
 }
@@ -117,13 +117,6 @@ enum abstract AlphabetRenderMode(ByteUInt) from ByteUInt to ByteUInt {
 	var MONOSPACE = 1;
 }
 
-enum abstract AdvanceMode(ByteUInt) from ByteUInt to ByteUInt {
-	var EMPTY;
-	var GIVEN;
-	var AUTO;
-	var CALCULATED;
-}
-
 @:allow(funkin.editors.alphabet.AlphabetEditor)
 @:allow(funkin.editors.alphabet.AlphabetMainDataScreen)
 class Alphabet extends FlxSprite {
@@ -175,10 +168,8 @@ class Alphabet extends FlxSprite {
 	public var renderMode:AlphabetRenderMode = DEFAULT;
 
 	// for menu shit
-	public var menuOffset:FlxPoint = FlxPoint.get();
 	public var targetY:Float = 0;
 	public var isMenuItem:Bool = false;
-	public var itemSlide:Float = 20;
 	public var itemHeight:Float = 120;
 
 	public function new(?x:Float, ?y:Float, ?text:String = "", ?font:OneOfTwo<String, Bool> = "normal") {
@@ -215,8 +206,8 @@ class Alphabet extends FlxSprite {
 		if (isMenuItem) {
 			var scaledY = targetY * 1.3;
 
-			y = CoolUtil.fpsLerp(y, (scaledY * itemHeight) + (FlxG.height - height) * 0.5 + menuOffset.y, 0.16);
-			x = CoolUtil.fpsLerp(x, (targetY * itemSlide) + 90 + menuOffset.x, 0.16);
+			y = CoolUtil.fpsLerp(y, (scaledY * itemHeight) + (FlxG.height - height) * 0.5, 0.16);
+			x = CoolUtil.fpsLerp(x, (targetY * 20) + 90, 0.16);
 		}
 	}
 
@@ -283,11 +274,14 @@ class Alphabet extends FlxSprite {
 				continue;
 			}
 
-			var advance:Float = getAdvance(letter, data);
+			var advance:Float = Math.NaN;
 
 			for (i in 0...data.components.length) {
 				__component = data.components[i];
 				var anim = getLetterAnim(letter, data, __component, i);
+				//if (cantrace)
+					//trace(anim.name + " | " + __component.anim + " | " + frames.frames[anim.frames[0]]);
+				advance = (Math.isNaN(advance) && i >= data.startIndex) ? getAdvance(letter, anim, data) : advance;
 
 				if (anim == null || __renderData.alpha <= 0.0)
 					continue;
@@ -434,38 +428,21 @@ class Alphabet extends FlxSprite {
 				continue;
 			}
 
-			final data = getData(letter);
-			__laneWidths[curLine] += renderMode == MONOSPACE ? defaultAdvance : getAdvance(letter, data);
+			var data = getData(letter);
+			__laneWidths[curLine] += (data != null && data.components.length > 0) ? getAdvance(letter, getLetterAnim(letter, data, data.components[data.startIndex], data.startIndex), data) : defaultAdvance;
 			@:bypassAccessor textWidth = Math.max(textWidth, __laneWidths[curLine]);
 		}
 
 		origin.set(textWidth * 0.5 + originOffset.x, textHeight * 0.5 + originOffset.y);
 	}
 
-	function getAdvance(letter:String, data:AlphabetLetterData):Float {
-		if (data == null || frames.numFrames <= 0)
+	function getAdvance(letter:String, anim:FlxAnimation, data:AlphabetLetterData):Float {
+		if (anim == null)
 			return defaultAdvance;
 
-		if (data.advanceStyle & GIVEN != 0) // just return if GIVEN or CALCULATED
-			return data.advance;
-
-		var result = 0.0;
-
-		for (i in 0...data.components.length) {
-			final compon = data.components[i];
-			final anim = getLetterAnim(letter, data, compon, i);
-			if (anim == null || anim.numFrames <= 0)
-				continue;
-
-			final wid = frames.frames[anim.frames[0]].sourceSize.x;
-			result = Math.max(wid + (wid * compon.scaleX - wid) * 0.5 - compon.x, result);
-		}
-
-		if (data.advanceStyle == AUTO) {
-			data.advance = result;
-			data.advanceStyle = CALCULATED;
-		}
-		return result;
+		if (data.advanceEmpty && !data.isDefault)
+			data.advance = frames.frames[anim.frames[0]].sourceSize.x;
+		return (data.isDefault) ? frames.frames[anim.frames[0]].sourceSize.x : data.advance;
 	}
 
 	private function fastGetData(char:String):AlphabetLetterData {
@@ -524,27 +501,31 @@ class Alphabet extends FlxSprite {
 	function getLetterAnim(char:String, data:AlphabetLetterData, component:AlphabetComponent, index:Int):FlxAnimation {
 		if (data == null) return null;
 		var name = char + Std.string(index);
-		var anim = animation.getByName(name);
-		if (anim != null) return anim;
+		if (animation.exists(name)) return animation.getByName(name);
 
-		var animPrefix = (data.isDefault) ?
+		var anim = (data.isDefault) ?
 			component.anim.replace("LOWERLETTER", char.toLowerCase()).replace("UPPERLETTER", char.toUpperCase()).replace("LETTER", char) :
 			component.anim;
-		animation.addByPrefix(name, animPrefix, fps);
-		anim = animation.getByName(name);
-		if (anim == null) {
+		animation.addByPrefix(name, anim, fps);
+		if (!animation.exists(name)) {
 			failedLetters.push(char);
 			var traceIndex = (component.refIndex != null) ? 'Outline For Component Index ${component.refIndex}' : 'Component Index ${index - data.startIndex}';
-			Logs.error('Character $char: $traceIndex: Animation "$animPrefix" not found.');
+			Logs.error('Character $char: $traceIndex: Animation "$anim" not found.');
 			return null;
 		}
-		return anim;
+		return animation.getByName(name);
 	}
 
 	function checkNode(node:Xml):Void {
 		switch (node.nodeName) {
 			case "spritesheet":
 				final sheet = node.firstChild().nodeValue.trim();
+				if (frames == null)
+					frames = Paths.getFrames(sheet);
+				else {
+					for (frame in Paths.getFrames(sheet).frames)
+						frames.pushFrame(frame);
+				}
 				sheets.push(sheet);
 			case "defaultAnim":
 				var idx = ["UPPER", "LOWER"].indexOf(node.get("casing").toUpperCase()) + 1;
@@ -557,7 +538,7 @@ class Alphabet extends FlxSprite {
 				var res:AlphabetLetterData = {
 					isDefault: true,
 					advance: 0.0,
-					advanceStyle: EMPTY,
+					advanceEmpty: true,
 					components: [{
 						anim: node.firstChild().nodeValue.trim(),
 
@@ -661,7 +642,7 @@ class Alphabet extends FlxSprite {
 				letterData.set(char, {
 					isDefault: false,
 					advance: advance,
-					advanceStyle: Math.isNaN(advance) ? AUTO : GIVEN,
+					advanceEmpty: Math.isNaN(advance),
 					components: components,
 					startIndex: startIndex
 				});
@@ -736,7 +717,7 @@ class Alphabet extends FlxSprite {
 				letterData.set(char, {
 					isDefault: false,
 					advance: advance,
-					advanceStyle: Math.isNaN(advance) ? AUTO : GIVEN,
+					advanceEmpty: Math.isNaN(advance),
 					components: components,
 					startIndex: (node.get("hasOutline") == "true") ? 1 : 0
 				});
@@ -787,9 +768,10 @@ class Alphabet extends FlxSprite {
 		colorMode = (["offsets", "none"].indexOf(xml.get("colorMode")) + 1);
 		antialiasing = xml.get("antialiasing").getDefault("true") == "true";
 
+		frames = null;
+
 		for (node in xml.elements())
 			checkNode(node);
-		frames = Paths.getMultiFrames(sheets);
 	}
 
 	private static var alphabetProperties:Array<String> = ["fps", "advance", "lineGap", "forceCasing", "colorMode", "antialiasing"];
@@ -840,7 +822,7 @@ class Alphabet extends FlxSprite {
 			var data = fastGetData(let);
 			var node = Xml.createElement(data.components.length - data.startIndex > 1 ? "composite" : "anim");
 			node.set("char", let);
-			if (data.advanceStyle == GIVEN)
+			if (!data.advanceEmpty)
 				node.set("advance", Std.string(data.advance));
 
 			for (i in data.startIndex...data.components.length) {
@@ -913,8 +895,7 @@ class Alphabet extends FlxSprite {
 	}
 
 	override function destroy():Void {
-		menuOffset = FlxDestroyUtil.put(menuOffset);
-		originOffset = FlxDestroyUtil.put(originOffset);
+		originOffset = FlxDestroyUtil.destroy(originOffset);
 		__drawScale = FlxDestroyUtil.put(__drawScale);
 		__renderData = null;
 		__laneWidths = null;

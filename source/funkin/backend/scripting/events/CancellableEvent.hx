@@ -11,15 +11,7 @@ class CancellableEvent implements IFlxDestroyable {
 	/**
 	 * Additional data if used in scripts
 	 */
-	@:isVar public var data(get, set):Dynamic;
-
-	@:dox(hide)
-	function get_data():Dynamic
-		return data != null ? data : (data = {});
-
-	@:dox(hide)
-	function set_data(value:Dynamic):Dynamic
-		return data = value;
+	public var data:Dynamic = {};
 
 	/**
 	 * Prevents default action from occurring.
@@ -40,7 +32,7 @@ class CancellableEvent implements IFlxDestroyable {
 	public function new() {}
 
 	public function recycleBase() {
-		data = null;
+		data = {};
 		cancelled = false;
 		__continueCalls = true;
 	}

@@ -19,9 +19,7 @@ class Log
 		if (level >= LogLevel.DEBUG)
 		{
 			#if js
-			untyped js.Syntax.code ("console").debug("[" + info.className + "] " + message);
-			#elseif !macro
-			FunkinLogs.trace('[${info.className}] $message', INFO, LIGHTGRAY);
+			untyped #if haxe4 js.Syntax.code #else __js__ #end ("console").debug("[" + info.className + "] " + message);
 			#else
 			println("[" + info.className + "] " + Std.string(message));
 			#end
@@ -55,7 +53,7 @@ class Log
 		if (level >= LogLevel.INFO)
 		{
 			#if !macro
-			FunkinLogs.trace('[${info.className}] $message', INFO, CYAN);
+			FunkinLogs.trace('[${info.className}] $message', INFO, RED);
 			#else
 			println("[" + info.className + "] " + Std.string(message));
 			#end
@@ -66,8 +64,10 @@ class Log
 	{
 		#if sys
 		Sys.print(Std.string(message));
+		#elseif flash
+		untyped __global__["trace"](Std.string(message));
 		#elseif js
-		untyped js.Syntax.code ("console").log(message);
+		untyped #if haxe4 js.Syntax.code #else __js__ #end ("console").log(message);
 		#else
 		trace(message);
 		#end
@@ -77,8 +77,10 @@ class Log
 	{
 		#if sys
 		Sys.println(Std.string(message));
+		#elseif flash
+		untyped __global__["trace"](Std.string(message));
 		#elseif js
-		untyped js.Syntax.code ("console").log(message);
+		untyped #if haxe4 js.Syntax.code #else __js__ #end ("console").log(message);
 		#else
 		trace(Std.string(message));
 		#end
@@ -133,13 +135,13 @@ class Log
 		#end
 
 		#if js
-		if (untyped js.Syntax.code ("typeof console") == "undefined")
+		if (untyped #if haxe4 js.Syntax.code #else __js__ #end ("typeof console") == "undefined")
 		{
-			untyped js.Syntax.code ("console = {}");
+			untyped #if haxe4 js.Syntax.code #else __js__ #end ("console = {}");
 		}
-		if (untyped js.Syntax.code ("console").log == null)
+		if (untyped #if haxe4 js.Syntax.code #else __js__ #end ("console").log == null)
 		{
-			untyped js.Syntax.code ("console").log = function() {};
+			untyped #if haxe4 js.Syntax.code #else __js__ #end ("console").log = function() {};
 		}
 		#end
 	}

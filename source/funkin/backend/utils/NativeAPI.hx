@@ -13,6 +13,12 @@ import flixel.util.FlxColor;
  * Some functions might not have effect on some platforms.
  */
 class NativeAPI {
+	@:dox(hide) public static function registerAudio() {
+		#if windows
+		Windows.registerAudio();
+		#end
+	}
+
 	@:dox(hide) public static function registerAsDPICompatible() {
 		#if windows
 		Windows.registerAsDPICompatible();
@@ -179,7 +185,16 @@ class NativeAPI {
 	public static function setConsoleColors(foregroundColor:ConsoleColor = NONE, ?backgroundColor:ConsoleColor = NONE) {
 		if(Main.noTerminalColor) return;
 
-		#if sys
+		#if (windows && !hl)
+		if(foregroundColor == NONE)
+			foregroundColor = LIGHTGRAY;
+		if(backgroundColor == NONE)
+			backgroundColor = BLACK;
+
+		var fg:Int = cast foregroundColor;
+		var bg:Int = cast backgroundColor;
+		Windows.setConsoleColors((bg * 16) + fg);
+		#elseif sys
 		Sys.print("\x1b[0m");
 		if(foregroundColor != NONE)
 			Sys.print("\x1b[" + Std.int(consoleColorToANSI(foregroundColor)) + "m");

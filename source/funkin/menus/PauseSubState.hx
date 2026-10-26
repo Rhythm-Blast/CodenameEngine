@@ -11,7 +11,6 @@ import funkin.backend.scripting.events.menu.MenuChangeEvent;
 import funkin.backend.scripting.events.menu.pause.*;
 import funkin.backend.system.Conductor;
 import funkin.backend.utils.FunkinParentDisabler;
-import funkin.backend.utils.FunkinParentDisabler.ParentDisableable;
 import funkin.editors.charter.Charter;
 import funkin.menus.StoryMenuState;
 import funkin.options.OptionsMenu;
@@ -28,7 +27,6 @@ class PauseSubState extends MusicBeatSubstate
 	var deathCounter:FunkinText;
 	var multiplayerText:FunkinText;
 
-	var parentDisablerExcludeList:Array<ParentDisableable>;
 	var menuItems:Array<String>;
 
 	var curSelected:Int = 0;
@@ -42,10 +40,8 @@ class PauseSubState extends MusicBeatSubstate
 
 	private var __cancelDefault:Bool = false;
 
-	public function new(?items:Array<String>, ?selectCall:NameEvent->Void, ?excludeList:Array<ParentDisableable>) {
+	public function new(?items:Array<String>, ?selectCall:NameEvent->Void) {
 		super();
-
-		parentDisablerExcludeList = excludeList != null ? excludeList : [];
 		menuItems = items != null ? items : Flags.DEFAULT_PAUSE_ITEMS.copy();
 		this.selectCall = selectCall;
 	}
@@ -58,7 +54,7 @@ class PauseSubState extends MusicBeatSubstate
 		if (menuItems.contains("Exit to charter") && !PlayState.chartingMode)
 			menuItems.remove("Exit to charter");
 
-		add(parentDisabler = new FunkinParentDisabler(parentDisablerExcludeList));
+		add(parentDisabler = new FunkinParentDisabler());
 
 		pauseScript = Script.create(Paths.script(script));
 		pauseScript.setParent(this);

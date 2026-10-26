@@ -94,9 +94,12 @@ class CharacterAnimsWindow extends UIButtonList<CharacterAnimButton> {
 			var frameIndex:Int = anim.frames.getDefault([0])[0];
 			var frame:FlxFrame = displayWindowSprite.frames.frames[frameIndex];
 	
+			var frameRect:Rectangle = new Rectangle(frame.offset.x, frame.offset.y, frame.sourceSize.x, frame.sourceSize.y);
+			var animBounds:Rectangle = displayWindowGraphic != null ? displayWindowGraphic.bitmap.bounds(frameRect) : frameRect;
+	
 			displayAnimsFramesList.set(name, {
-				frame: character.frames.frames[frameIndex],
-				scale: 104/Math.max(frame.frame.width, frame.frame.height),
+				frame: character.frames.frames[anim.frames.getDefault([0])[0]],
+				scale: 104/Math.max(animBounds.width, animBounds.height),
 				renderTexture: null
 			});
 		}
@@ -147,7 +150,7 @@ class CharacterAnimsWindow extends UIButtonList<CharacterAnimButton> {
 		var animData:AnimData = {
 			name: animName,
 			anim: __autoCompleteAnims[0],
-			fps: character.defaultAimFPS, loop: false,
+			fps: 24, loop: false,
 			x: 0, y: 0,
 			indices: [],
 			animType: NONE,
@@ -174,7 +177,7 @@ class CharacterAnimsWindow extends UIButtonList<CharacterAnimButton> {
 
 		var nextButtonY:Float = 0;
 		for (buttonID in 0...newButton.ID)
-			nextButtonY += buttons.members[buttonID].bHeight + globalButtonOffset.y;
+			nextButtonY += buttons.members[buttonID].bHeight + buttonOffset.y;
 		nextscrollY = nextButtonY;
 	}
 

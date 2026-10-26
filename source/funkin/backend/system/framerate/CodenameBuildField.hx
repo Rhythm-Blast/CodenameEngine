@@ -6,17 +6,14 @@ import openfl.text.TextField;
 class CodenameBuildField extends TextField {
 	public function new() {
 		super();
+		defaultTextFormat = Framerate.textFormat;
 		autoSize = LEFT;
 		multiline = wordWrap = false;
 		reload();
 	}
 
 	public function reload() {
-		defaultTextFormat = Framerate.textFormat;
-
-		#if TEST_BUILD
-		text = '${Flags.VERSION_MESSAGE} (Test Build)';
-		#elseif COMPILE_EXPERIMENTAL
+		#if COMPILE_EXPERIMENTAL
 		text = '${Flags.VERSION_MESSAGE} (Experimental Build)';
 		#else
 		text = '${Flags.VERSION_MESSAGE}';

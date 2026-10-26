@@ -105,9 +105,6 @@
 		<str id="ghostTapping-name">Toques Fantasma</str>
 		<str id="ghostTapping-desc">Se desmarcado, bater em teclas que não tem uma nota conta como erro.</str>
 
-		<str id="centeredFields-name">Pistas Centradas</str>
-		<str id="centeredFields-desc">Se marcado, apenas as pistas jogáveis serão visiveis, sendo alinhadas horizontalmente no ecrã (também conhecido por "Middlescroll").</str>
-
 		<str id="naughtyness-name">Indecência</str>
 		<str id="naughtyness-desc">Se desmarcado, irá censurar as cenas da Semana 7, ou mais.</str>
 
@@ -180,9 +177,6 @@
 		<str id="editorSFX-name">Sons de Editor</str>
 		<str id="editorSFX-desc">Se marcado, tocará efeitos sonoros nos editores (ex: ao carregar em caixas...)</str>
 
-		<str id="charterSwapEventSides-name">Trocar Lados de Eventos</str>
-		<str id="charterSwapEventSides-desc">Se marcado, eventos globais estarão no lado esquerdo das pistas.</str>
-
 		<str id="editorCharterPrettyPrint-name">Mapas Legíveis</str>
 		<str id="editorCharterPrettyPrint-desc">Se marcado, os ficheiros guardados no editor de mapas serão formatados para serem fácilmente legíveis.</str>
 
@@ -209,12 +203,6 @@
 
 		<str id="songOffsetAffectEditors-name">Atraso no Mapeador</str>
 		<str id="songOffsetAffectEditors-desc">Se marcado, irá ativar o Atraso da Música no Editor de Mapas, também.</str>
-
-		<str id="legacyModMenuNames-name">Nomes de Mods Legados</str>
-		<str id="legacyModMenuNames-desc">Se for selecionada, esta opção utilizará o nome da pasta do mod para o mod.</str>
-
-		<str id="legacyMemoryCounter-name">Contador de Memória Clássico</str>
-		<str id="legacyMemoryCounter-desc">Se marcado, o contador de memória mostrará o uso de memória do GC de Haxe e o seu máximo (o comportamento original) em vez da memória de trabalho vista no Gestor de Tarefas.</str>
 	</group>
 
 </language>

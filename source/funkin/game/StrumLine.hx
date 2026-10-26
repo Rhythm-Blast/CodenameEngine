@@ -120,13 +120,8 @@ class StrumLine extends FlxTypedGroup<Strum> {
 		this.notes = new NoteGroup();
 
 		var v = Paths.voices(PlayState.SONG.meta.name, PlayState.difficulty, vocalPrefix);
-		if (vocalPrefix != "")
-			vocals = FlxG.sound.load(Options.streamedVocals ? v : flixel.sound.FlxSoundData.fromAssetKey(v, false));
-		else
-		{
-			vocals = FlxG.sound.list.recycle(FlxSound);
-			vocals.alive = vocals.exists = true;
-		}
+		vocals = vocalPrefix != "" ? FlxG.sound.load(Options.streamedVocals ? Assets.getMusic(v) : v) : new FlxSound();
+		vocals.persist = false;
 	}
 
 	/**
@@ -348,9 +343,11 @@ class StrumLine extends FlxTypedGroup<Strum> {
 			notes.forEachAlive(__inputProcessPressed);
 		}
 
-		for (i => s in members) s.updatePlayerInput(__pressed[i], __justPressed[i], __justReleased[i]);
+		forEach(function(str:Strum) {
+			str.updatePlayerInput(__pressed[str.ID], __justPressed[str.ID], __justReleased[str.ID]);
+		});
 
-		PlayState.instance.gameAndCharsEvent("onPostInputUpdate", event);
+		PlayState.instance.gameAndCharsCall("onPostInputUpdate");
 	}
 
 	/**
@@ -373,8 +370,8 @@ class StrumLine extends FlxTypedGroup<Strum> {
 
 	override function destroy() {
 		super.destroy();
-		vocals?.destroy();
-		if (startingPos != null) startingPos.put();
+		if(startingPos != null)
+			startingPos.put();
 		notes = FlxDestroyUtil.destroy(notes);
 	}
 
@@ -432,17 +429,6 @@ class StrumLine extends FlxTypedGroup<Strum> {
 		if (PlayState.instance != null) PlayState.instance.gameAndCharsEvent("onPostStrumCreation", event);
 
 		return babyArrow;
-	}
-
-	public function resetStrumPositions() {
-		var spacing = (data.strumSpacing != null ? data.strumSpacing : 1);
-
-		for (i in 0...members.length) {
-			members[i].setPosition(
-				startingPos.x + (Note.swagWidth * strumScale * spacing * i),
-				startingPos.y + (Note.swagWidth * 0.5) - (Note.swagWidth * strumScale * 0.5)
-			);
-		}
 	}
 
 	/**

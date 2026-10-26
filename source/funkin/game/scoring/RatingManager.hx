@@ -53,6 +53,7 @@ class RatingManager
 			return windows.exists(name) ? windows.get(name) : -1;
 		}
 
+		addRating({name: "epic", window: getWindow("epic"), accuracy: 1, score: 350, splash: true});
 		addRating({name: "sick", window: getWindow("sick"), accuracy: 1, score: 300, splash: true});
 		addRating({name: "good", window: getWindow("good"), accuracy: 0.75, score: 200, health: 0.015});
 		addRating({name: "bad", window: getWindow("bad"), accuracy: 0.45, score: 100, health: 0});

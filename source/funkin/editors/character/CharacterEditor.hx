@@ -517,22 +517,15 @@ class CharacterEditor extends UIState {
 			case CCharEditInfo(oldInfo, newInfo):
 				characterPropertiesWindow.editCharacterInfo(oldInfo, false);
 			case CCharEditSprite(fileID):
-				var cneisdPath:String = './.temp/${fileID}__undo__/';
+				var cneisdPath:String = './.temp/__undo__${Type.getClassName(Type.getClass(FlxG.state))}__${fileID}.cneisd';
 				if (FileSystem.exists(cneisdPath)) {
 					try {
-						var paths:Array<ImageSaveData> = [];
+						var cneisdData:String = File.getContent(cneisdPath);
+						var imageSaveData:ImageSaveData = UIImageExplorer.deserializeSaveDataGlobal(cneisdData);
 
-						for(file in FileSystem.readDirectory(cneisdPath)){
-							var cneisdData:String = File.getContent(cneisdPath + file);
-							var imageSaveData:ImageSaveData = UIImageExplorer.deserializeSaveDataGlobal(cneisdData);
-
-							paths.push(imageSaveData);
-
-							UIImageExplorer.saveFilesGlobal(imageSaveData, '${Paths.getAssetsRoot()}/images/characters', null, false);
-
-						}
-
-						characterPropertiesWindow.changeSprite(paths);
+						UIImageExplorer.saveFilesGlobal(imageSaveData, '${Paths.getAssetsRoot()}/images/characters', () -> {
+							characterPropertiesWindow.changeSprite('${imageSaveData.directory.length > 0 ? '${imageSaveData.directory}/' : ""}' + imageSaveData.imageName);
+						}, false);
 					} catch (e) {
 						trace('ERROR COMPLETING UNDO: $e');
 					};
@@ -598,22 +591,15 @@ class CharacterEditor extends UIState {
 			case CCharEditInfo(oldInfo, newInfo):
 				characterPropertiesWindow.editCharacterInfo(newInfo, false);
 			case CCharEditSprite(fileID):
-				var cneisdPath:String = './.temp/${fileID}__redo__/';
+				var cneisdPath:String = './.temp/__redo__${Type.getClassName(Type.getClass(FlxG.state))}__${fileID}.cneisd';
 				if (FileSystem.exists(cneisdPath)) {
 					try {
-						var paths:Array<ImageSaveData> = [];
+						var cneisdData:String = File.getContent(cneisdPath);
+						var imageSaveData:ImageSaveData = UIImageExplorer.deserializeSaveDataGlobal(cneisdData);
 
-						for(file in FileSystem.readDirectory(cneisdPath)){
-							var cneisdData:String = File.getContent(cneisdPath + file);
-							var imageSaveData:ImageSaveData = UIImageExplorer.deserializeSaveDataGlobal(cneisdData);
-
-							paths.push(imageSaveData);
-
-							UIImageExplorer.saveFilesGlobal(imageSaveData, '${Paths.getAssetsRoot()}/images/characters', null, false);
-
-						}
-
-						characterPropertiesWindow.changeSprite(paths);
+						UIImageExplorer.saveFilesGlobal(imageSaveData, '${Paths.getAssetsRoot()}/images/characters', () -> {
+							characterPropertiesWindow.changeSprite('${imageSaveData.directory.length > 0 ? '${imageSaveData.directory}/' : ""}' + imageSaveData.imageName);
+						}, false);
 					} catch (e) {
 						trace('ERROR COMPLETING UNDO: $e');
 					};

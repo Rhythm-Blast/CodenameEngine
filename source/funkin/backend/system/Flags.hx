@@ -1,28 +1,25 @@
 package funkin.backend.system;
 
 import flixel.util.FlxColor;
-import funkin.backend.assets.AssetsLibraryList;
 import funkin.backend.assets.ModsFolder;
-import funkin.backend.assets.ModsFolderLibrary;
 import funkin.backend.assets.IModsAssetLibrary;
 import funkin.backend.assets.ScriptedAssetLibrary;
-import funkin.backend.assets.TranslatedAssetLibrary;
 import funkin.backend.system.macros.GitCommitMacro;
 import funkin.backend.utils.IniUtil;
 import lime.app.Application;
-import lime.graphics.Image;
 import lime.utils.AssetLibrary as LimeAssetLibrary;
 import lime.utils.AssetType;
 
 /**
- * A class that reads the `data/config/modpack.ini` or `data/config/flags.ini` file,
- * allowing to read settable Flags (customs too).
+ * A class that reads the `flags.ini` file, allowing to read settable Flags (customs too).
  */
 @:build(funkin.backend.system.macros.FlagMacro.build())
 class Flags {
+	public static var overridenFlags:Map<String, Bool> = [];
+
 	// -- Codename's Addon Config --
 	@:bypass public static var addonFlags:Map<String, Dynamic> = [];
-	public static var CURRENT_API_VERSION:Int = 3;
+	public static var CURRENT_API_VERSION:Int = 2;
 
 	// -- Codename's ZipFolderLibrary Config --
 	public static var ALLOWED_ZIP_EXTENSIONS:Array<String> = ["zip"];
@@ -35,14 +32,10 @@ class Flags {
 	public static var MOD_DOWNLOAD_LINK:String  = "";
 	public static var MOD_DEPENDENCIES:Array<String> = [];
 
-	public static var MOD_ICONS:Array<String> = ["icon16", "icon24", "icon32", "icon"];
-
-	// DEPRECATED (Remove these later probably 8 API VERSION)
-	@:lazy public static var MOD_ICON64:Null<String> = null;
-	@:lazy public static var MOD_ICON32:Null<String> = null;
-	@:lazy public static var MOD_ICON24:Null<String> = null;
-	@:lazy public static var MOD_ICON16:Null<String> = null;
-	@:lazy public static var MOD_ICON:Null<String> = null;
+	@:noCompletion public static var MOD_ICON32:String = "";
+	@:noCompletion public static var MOD_ICON24:String = "";
+	@:noCompletion public static var MOD_ICON16:String = "";
+	public static var MOD_ICON:String = "";
 
 	public static var MOD_DISCORD_CLIENT_ID:String = "";
 	public static var MOD_DISCORD_LOGO_KEY:String = "";
@@ -68,27 +61,13 @@ class Flags {
 	public static var REPO_OWNER:String = "CodenameCrew";
 	public static var REPO_URL:String = 'https://github.com/$REPO_OWNER/$REPO_NAME';
 
-	@:lazy public static var PATHS_CASE_SENSITIVE_FIX:Null<Bool> = null;
-	@:lazy public static var PATHS_CACHE_LIFETIME:Null<Int> = null;
-	public static var PATHS_CACHE_RESET_ON_SWITCH_STATE:Bool = true;
-
-	// turn this true to debug shaders, or off for releasing mods.
-	public static var SHADERS_CACHE_RESET_ON_SWITCH_STATE:Bool = false;
-
-	public static var GAME_WIDTH:Int = 1280;
-	public static var GAME_HEIGHT:Int = 720;
-
 	/**
-	 * Preferred file extensions for the game's audio files.
+	 * Preferred sound extension for the game's audio files.
+	 * Currently is set to `mp3` for web targets, and `ogg` for other targets.
 	 */
-	public static var SOUND_EXTS:Array<String> = [#if web "mp3", "ogg", #else "ogg", "mp3", #end "flac", "opus", "wav"];
-	public static var VIDEO_EXTS:Array<String> = ["mp4", "webm", "mkv", "mov"]; // is there any more? // yes frakits
-	public static var IMAGE_EXTS:Array<String> = ["png", "jpg", "jpeg"]; // TODO: Add more after another lime rebases for SDLImage
-
-	// DEPRECATED (Remove these later probably 5 API VERSION)
-	@:lazy public static var SOUND_EXT:Null<String> = null;
-	@:lazy public static var VIDEO_EXT:Null<String> = null;
-	@:lazy public static var IMAGE_EXT:Null<String> = null;
+	public static var SOUND_EXT:String = #if web "mp3" #else "ogg" #end; // we also support wav
+	public static var VIDEO_EXT:String = "mp4";
+	public static var IMAGE_EXT:String = "png"; // we also support jpg
 
 	public static var DEFAULT_DISCORD_LOGO_KEY:String = "icon";
 	public static var DEFAULT_DISCORD_CLIENT_ID:String = "1383853614589673472";
@@ -128,11 +107,6 @@ class Flags {
 	public static var DEFAULT_STEPS_PER_BEAT:Int = 4;
 	public static var DEFAULT_LOOP_TIME:Float = 0.0;
 	public static var ICONS_AUTOPOSITION:Bool = true;
-
-	@:lazy public static var DEFAULT_SOUND_TIME_SCALED_PITCH:Null<Bool> = null;
-	@:lazy public static var USE_SOUND_VOLUME_CURVE:Null<Bool> = null;
-	@:lazy public static var USE_FLXTRAIL_FRAMES:Null<Bool> = null;
-
 	public static var SUPPORTED_CHART_RUNTIME_FORMATS:Array<String> = ["Legacy", "Psych Engine"];
 	public static var SUPPORTED_CHART_FORMATS:Array<String> = ["BaseGame"];
 
@@ -156,8 +130,6 @@ class Flags {
 	@:also(funkin.game.PlayState.opponentMode)
 	public static var DEFAULT_OPPONENT_MODE:Bool = false;
 
-	public static var ALLOW_CENTERED_FIELDS:Bool = true; // Whether or not, `Options.centeredFields` (AKA "Middlescroll") will have an effect.
-
 	public static var EARLY_HIT_WINDOW_RANGE:Float = 1.0; // was 0.5 for easier early hitting, but now 1 to demotivate mashing and getting away with it.
 	public static var LATE_HIT_WINDOW_RANGE:Float = 1.0;
 	public static var SHITS_BREAK_COMBO:Bool = true;
@@ -170,11 +142,6 @@ class Flags {
 	#end
 
 	public static var SUSTAINS_AS_ONE_NOTE:Null<Bool> = null;
-
-	public static var USE_LEGACY_CENTER_CAM:Null<Bool> = null;
-	public static var USE_LEGACY_FLXANIMATE_STAGE_MATRIX:Null<Bool> = null;
-
-	public static var CHANGE_WINDOW_TITLE_PLAYSTATE:Bool = true;
 
 	@:also(funkin.game.Character.FALLBACK_DEAD_CHARACTER)
 	public static var DEFAULT_GAMEOVER_CHARACTER:String = "bf-dead";
@@ -194,6 +161,8 @@ class Flags {
 	public static var DEFAULT_CAM_ZOOM_LERP:Float = 0.05;
 	public static var DEFAULT_HUD_ZOOM_LERP:Float = 0.05;
 
+	public static var USE_LEGACY_ZOOM_FACTOR:Null<Bool> = null;
+	
 	// Font configuration
 	public static var DEFAULT_FONT:String = "vcr.ttf";
 	public static var DEFAULT_FONT_SIZE:Int = 16;
@@ -313,22 +282,15 @@ class Flags {
 	public static var DEFAULT_CHARACTER_GHOSTDISABLE_SOUND:String = "editors/character/ghostDisable";
 	public static var DEFAULT_CHARACTER_GHOSTENABLE_SOUND:String = "editors/character/ghostEnable";
 
-	@:lazy public static var DEFAULT_GLSL_VERSION:String = null;
-	public static var FUNKIN_SHADER_CODE_PREFIX:String = "";
-	public static var FUNKIN_SHADER_CODE_FRAGMENT_PREFIX:String = "";
-	public static var FUNKIN_SHADER_CODE_VERTEX_PREFIX:String = "";
-
+	public static var DEFAULT_GLSL_VERSION:String = "120";
 	@:also(funkin.backend.utils.HttpUtil.userAgent)
 	public static var USER_AGENT:String = 'request';
 	// -- End of Codename's Default Flags --
 
-	@:bypass public static var modIconImages:Array<Image>;
-	@:lazy public static var overridenFlags:Map<String, Bool> = [];
-
 	/**
 	 * Flags that Codename couldn't recognize as it's own defaults (they can only be `string`! due to them being unparsed).
 	 */
-	@:lazy public static var customFlags:Map<String, String> = [];
+	@:bypass public static var customFlags:Map<String, String> = [];
 
 	public static function loadFromData(flags:Map<String, String>, data:String) {
 		if (!(data.length > 0)) return;
@@ -352,56 +314,9 @@ class Flags {
 	private static function loadPost() {
 		if (MOD_API_VERSION == null) MOD_API_VERSION = CURRENT_API_VERSION;
 		if (WINDOW_TITLE_USE_MOD_NAME == null) WINDOW_TITLE_USE_MOD_NAME = !overridenFlags.exists('TITLE') && overridenFlags.exists('MOD_NAME');
-		if (DEFAULT_GLSL_VERSION == null) DEFAULT_GLSL_VERSION = openfl.utils.GLSLSourceAssembler.getDefaultVersion();
-		if (PATHS_CASE_SENSITIVE_FIX == null) {
-			#if windows
-			for (l in Paths.assetsTree.libraries) {
-				final lib = AssetsLibraryList.getCleanLibrary(l);
-				if (!(lib is IModsAssetLibrary) || (lib is TranslatedAssetLibrary)) continue;
-
-				if (PATHS_CASE_SENSITIVE_FIX = !(lib is ModsFolderLibrary)) break;
-			}
-
-			if (PATHS_CASE_SENSITIVE_FIX == null) PATHS_CASE_SENSITIVE_FIX = false;
-			#else
-			PATHS_CASE_SENSITIVE_FIX = true;
-			#end
-		}
-
 		if (USE_LEGACY_TIMING == null) USE_LEGACY_TIMING = MOD_API_VERSION < 2;
+		if (USE_LEGACY_ZOOM_FACTOR == null) USE_LEGACY_ZOOM_FACTOR = MOD_API_VERSION < 2;
 		if (SUSTAINS_AS_ONE_NOTE == null) SUSTAINS_AS_ONE_NOTE = MOD_API_VERSION >= 2;
-		if (DEFAULT_SOUND_TIME_SCALED_PITCH == null) DEFAULT_SOUND_TIME_SCALED_PITCH = MOD_API_VERSION >= 2;
-		if (USE_SOUND_VOLUME_CURVE == null) USE_SOUND_VOLUME_CURVE = MOD_API_VERSION >= 2;
-		if (USE_FLXTRAIL_FRAMES == null) USE_FLXTRAIL_FRAMES = MOD_API_VERSION < 2;
-		if (USE_LEGACY_CENTER_CAM == null) USE_LEGACY_CENTER_CAM = MOD_API_VERSION < 3;
-		if (USE_LEGACY_FLXANIMATE_STAGE_MATRIX == null) USE_LEGACY_FLXANIMATE_STAGE_MATRIX = MOD_API_VERSION < 3;
-
-		flixel.sound.FlxSound.defaultTimeScaledPitch = cast DEFAULT_SOUND_TIME_SCALED_PITCH;
-		flixel.addons.effects.FlxTrail.defaultDelayBackwardCompatibility = cast USE_FLXTRAIL_FRAMES;
-
-		if (SOUND_EXT == null) SOUND_EXT = SOUND_EXTS[0]; else SOUND_EXTS = [SOUND_EXT];
-		if (VIDEO_EXT == null) VIDEO_EXT = VIDEO_EXTS[0]; else VIDEO_EXTS = [VIDEO_EXT];
-		if (IMAGE_EXT == null) IMAGE_EXT = IMAGE_EXTS[0]; else IMAGE_EXTS = [IMAGE_EXT];
-
-		final compIcons = [];
-		if (MOD_ICON != null) compIcons.push(MOD_ICON);
-		if (MOD_ICON16 != null) compIcons.push(MOD_ICON16);
-		if (MOD_ICON24 != null) compIcons.push(MOD_ICON24);
-		if (MOD_ICON32 != null) compIcons.push(MOD_ICON32);
-		if (MOD_ICON64 != null) compIcons.push(MOD_ICON64);
-
-		if (compIcons.length > 0) MOD_ICONS = compIcons;
-
-		modIconImages = [];
-		var path:String;
-		for (icon in MOD_ICONS) {
-			if (Assets.exists(icon)) path = icon;
-			else if (!Assets.exists(path = Paths.image(icon))) continue;
-
-			modIconImages.push(Image.fromBytes(Assets.getBytes(path)));
-		}
-
-		modIconImages.sort((a:Image, b:Image) -> Math.max(a.width, a.height) < Math.max(b.width, b.height) ? 1 : -1);
 	}
 
 	public static function loadFromDatas(datas:Array<String>):Map<String, String> {
@@ -443,18 +358,17 @@ class Flags {
 				@:privateAccess
 				l = cast(l, openfl.utils.AssetLibrary).__proxy;
 			}
-			if (lib is funkin.backend.assets.TranslatedAssetLibrary) {
+			if(lib is funkin.backend.assets.TranslatedAssetLibrary) {
 				// skip translations since it would be useless, if you wanna modify it set the flags inside of global.hx
 				continue;
 			}
 
 			if (l is IModsAssetLibrary) {
-				if (cast(l, IModsAssetLibrary).modName == "assets") continue;
-				if (cast(l, IModsAssetLibrary).modName == "source") continue;
-
 				var flagsTxt = "";
 				if (l.exists(Paths.ini("config/modpack"), AssetType.TEXT))
 					flagsTxt = l.getAsset(Paths.ini("config/modpack"), AssetType.TEXT);
+				if (cast(l, IModsAssetLibrary).modName == "assets") continue;
+				if (cast(l, IModsAssetLibrary).modName == "source") continue;
 
 				if (cast(l, IModsAssetLibrary).modName == ModsFolder.currentModFolder) {
 					var flags:Map<String, String> = [];

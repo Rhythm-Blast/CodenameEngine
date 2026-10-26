@@ -4,11 +4,6 @@ import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxSave;
 import openfl.Lib;
 
-#if IMGUI_ENABLED
-import lime.tools.imgui.ImGuiFlags;
-import lime.tools.imgui.ImGuiIO;
-#end
-
 /**
  * The save data of the engine.
  * Mod save data is stored in `FlxG.save.data`.
@@ -27,48 +22,29 @@ class Options
 	 */
 	public static var naughtyness:Bool = true;
 	public static var downscroll:Bool = false;
-	public static var centeredFields:Bool = false;
 	public static var ghostTapping:Bool = true;
 	public static var flashingMenu:Bool = true;
 	public static var camZoomOnBeat:Bool = true;
 	public static var fpsCounter:Bool = true;
-	public static var fpsCounterConductor:Bool = true;
-	public static var fpsCounterFlixel:Bool = true;
-	public static var fpsCounterSystem:Bool = true;
-	public static var fpsCounterAssets:Bool = true;
-	public static var fpsCounterStats:Bool = true;
 	public static var autoPause:Bool = true;
 	public static var antialiasing:Bool = true;
 	public static var volume:Float = 1;
 	public static var volumeMusic:Float = 1;
 	public static var volumeSFX:Float = 1;
 	public static var week6PixelPerfect:Bool = true;
-	public static var discordRPC:Bool = true;
 	public static var gameplayShaders:Bool = true;
 	public static var colorHealthBar:Bool = true;
 	public static var lowMemoryMode:Bool = false;
 	public static var devMode:Bool = false;
 	public static var betaUpdates:Bool = false;
 	public static var splashesEnabled:Bool = true;
-	public static var legacyMemoryCounter:Bool = false;
-	public static var legacyModMenuNames:Bool = false;
-
-	 // DEPRECATED
-	@:dox(hide) @:doNotSave public static var hitWindow:Float = 250;
-
-	/*
-	* The maximum LIMITED framerate the game can run at.
-	* CANNOT be changed through scripts.
-	* @since 1.1.0-rc2
-	*/
-	@:doNotSave public static inline final maxFrameRate:Int = 240;
-
+	@:dox(hide) @:doNotSave public static var hitWindow:Float = 250; // DEPRECATED
 	public static var songOffset:Float = 0;
 	public static var framerate:Int = 120;
 	public static var gpuOnlyBitmaps:Bool = #if (mac || web) false #else true #end; // causes issues on mac and web
 	public static var language = "en"; // default to english, Flags.DEFAULT_LANGUAGE should not modify this
-	public static var streamedMusic:Bool = true;
-	public static var streamedVocals:Bool = true;
+	public static var streamedMusic:Bool = false;
+	public static var streamedVocals:Bool = false;
 	public static var quality:Int = 1;
 	public static var allowConfigWarning:Bool = true;
 	#if MODCHARTING_FEATURES
@@ -76,14 +52,12 @@ class Options
 	#end
 
 	public static var lastLoadedMod:String = null;
-	public static var disabledAddons:Array<String> = [];
 
 	/**
 	 * EDITORS SETTINGS
 	 */
 	public static var intensiveBlur:Bool = true;
 	public static var editorSFX:Bool = true;
-	public static var charterSwapEventSides:Bool = false;
 
 	public static var editorCharterPrettyPrint:Bool = false;
 	public static var editorCharacterPrettyPrint:Bool = true;
@@ -118,7 +92,6 @@ class Options
 	public static var charterAutoSaveTime:Float = 60*5;
 	public static var charterAutoSaveWarningTime:Float = 5;
 	public static var charterAutoSavesSeparateFolder:Bool = false;
-	public static var charterPauseQuant:Bool = false;
 
 	/**
 	 * CHARACTER EDITOR
@@ -129,33 +102,6 @@ class Options
 	public static var characterAxis:Bool = true;
 	public static var characterDragging:Bool = true;
 	public static var playAnimOnOffset:Bool = false;
-
-	/**
-	 * CONSOLE
-	 */
-	public static var consoleTimeFilter:Bool = true;
-	public static var consoleTypeFilter:Bool = true;
-	public static var consoleInfoFilter:Bool = true;
-	public static var consoleWarningFilter:Bool = true;
-	public static var consoleErrorFilter:Bool = true;
-	public static var consoleTraceFilter:Bool = true;
-	public static var consoleVerboseFilter:Bool = true;
-	public static var consoleCommandsFilter:Bool = true;
-	public static var consoleClassFilter:Bool = true;
-	public static var consoleFunctionFilter:Bool = true;
-	public static var consoleBasicTypesFilter:Bool = true;
-	public static var consoleObjectsFilter:Bool = true;
-	public static var consoleScriptsFilter:Bool = true;
-	public static var consoleCountDuplicatedOutput:Bool = true;
-
-	public static var useNativeConsole:Bool = false;
-
-	#if IMGUI_ENABLED
-	/**
-	 * IMGUI
-	 */
-	public static var imguiMultiViewport:Bool = #if linux false #else true #end;
-	#end
 
 	/**
 	 * PLAYER 1 CONTROLS
@@ -187,7 +133,6 @@ class Options
 	public static var P1_DEV_ACCESS:Array<FlxKey> = [SEVEN];
 	public static var P1_DEV_CONSOLE:Array<FlxKey> = [F2];
 	public static var P1_DEV_RELOAD:Array<FlxKey> = [F5];
-	public static var P1_DEV_INSPECTOR:Array<FlxKey> = [F4];
 
 	/**
 	* PLAYER 2 CONTROLS (ALT)
@@ -221,7 +166,6 @@ class Options
 	public static var P2_DEV_ACCESS:Array<FlxKey> = [];
 	public static var P2_DEV_CONSOLE:Array<FlxKey> = [];
 	public static var P2_DEV_RELOAD:Array<FlxKey> = [];
-	public static var P2_DEV_INSPECTOR:Array<FlxKey> = [];
 
 	/**
 	* SOLO GETTERS
@@ -255,7 +199,6 @@ class Options
 	public static var SOLO_DEV_ACCESS(get, null):Array<FlxKey>;
 	public static var SOLO_DEV_CONSOLE(get, null):Array<FlxKey>;
 	public static var SOLO_DEV_RELOAD(get, null):Array<FlxKey>;
-	public static var SOLO_DEV_INSPECTOR(get, null):Array<FlxKey>;
 
 	public static function load() {
 		var path = haxe.macro.Compiler.getDefine("SAVE_OPTIONS_PATH"), name = haxe.macro.Compiler.getDefine("SAVE_OPTIONS_NAME");
@@ -286,23 +229,10 @@ class Options
 		applyKeybinds();
 		applyQuality();
 
-		flixel.sound.FlxSoundData.allowStreaming = streamedMusic;
 		FlxG.sound.defaultMusicGroup.volume = volumeMusic;
 		FlxG.autoPause = autoPause;
-
-		var _framerate = framerate;
-		if (_framerate > maxFrameRate) _framerate = 0;
-
-		if (FlxG.updateFramerate < framerate) FlxG.drawFramerate = FlxG.updateFramerate = _framerate;
-		else FlxG.updateFramerate = FlxG.drawFramerate = _framerate;
-
-		#if IMGUI_ENABLED
-		if (imguiMultiViewport) {
-			ImGuiIO.configFlags |= ImGuiConfigFlags.ViewportsEnable;
-		} else {
-			ImGuiIO.configFlags = ImGuiIO.configFlags & ~ImGuiConfigFlags.ViewportsEnable;
-		}
-		#end
+		if (FlxG.updateFramerate < framerate) FlxG.drawFramerate = FlxG.updateFramerate = framerate;
+		else FlxG.updateFramerate = FlxG.drawFramerate = framerate;
 	}
 
 	public static function applyQuality() {
