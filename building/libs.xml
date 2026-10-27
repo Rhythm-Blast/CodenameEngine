@@ -22,7 +22,7 @@
 		<!-- <lib name="dox" /> -->
 		<lib name="markdown" />
 		<lib name="hxcpp-debug-server" />
-
+		<lib name="foxlite" /> <!--fuck you away3d foxlite is better-->
 		<lib name="nape-haxe4" />
 
 		<!-- For building lime -->
