@@ -66,7 +66,7 @@ class Script extends FlxBasic implements IFlxDestroyable {
 				commit: Flags.COMMIT_NUMBER,
 				hash: Flags.COMMIT_HASH,
 				build: 2675, // 2675 being the last build num before it was removed
-				name: "Codename Engine"
+				name: "Rhythm Blast"
 			},
 			"ModState"			=> funkin.backend.scripting.ModState,
 			"ModSubState"		=> funkin.backend.scripting.ModSubState,

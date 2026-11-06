@@ -1,4 +1,5 @@
 package funkin.backend.system;
+import funkin.backend.system.modules.CrashHandler;
 
 import flixel.FlxGame;
 

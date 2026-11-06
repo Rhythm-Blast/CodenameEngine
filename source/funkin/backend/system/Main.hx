@@ -23,6 +23,7 @@ import openfl.text.TextFormat;
 import openfl.utils.AssetLibrary;
 import sys.FileSystem;
 import sys.io.File;
+
 #if android
 import android.content.Context;
 import android.os.Build;
@@ -68,8 +69,9 @@ class Main extends Sprite
 		super();
 
 		instance = this;
-
+		
 		CrashHandler.init();
+		
 
 		addChild(game = new FunkinGame(gameWidth, gameHeight, MainState, Options.framerate, Options.framerate, skipSplash, startFullscreen));
 
@@ -77,6 +79,7 @@ class Main extends Sprite
 		addChild(framerateSprite = new Framerate());
 		SystemInfo.init();
 		#end
+
 	}
 
 	@:dox(hide)
